@@ -1,12 +1,29 @@
 {% extends "base.html" %}
 
+{% block head %}
+{{super()}}
+
+<style>
+    .controls {
+        margin-bottom: 1em;
+    }
+</style>
+{% endblock %}
+
+
 {% block content %}
+<div class="controls">
+    <button class="pure-button pure-button-primary">Upload more data</button>
+
+    <button class="pure-button">Reset data</button>
+    <button class="pure-button">Prefill data</button>
+</div>
+
 {% for year, month in reports %}
 <ul>
     <li><a href="{{ url_for('view_report', month=month, year=year) }}">{{year}}/{{month}}</a></li>
 </ul>
-
 {% endfor %}
 
-<button class="pure-button">Upload more data</button>
+
 {% endblock %}

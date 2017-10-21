@@ -18,6 +18,10 @@ table.payment-summary {
     margin-bottom: 1em;
 }
 
+table.payment-summary tr {
+    cursor: pointer;
+}
+
 .controls {
     margin-bottom: 1em;
 }
@@ -25,11 +29,16 @@ table.payment-summary {
 .sessions .row {
     margin-bottom: 5px;
     padding-left: 2em;
+    border-bottom: 1px  dotted gray;
 }
 
 .sessions .day {
     margin-left: -2em;
     width: 2em;
+    line-height: 1em;
+    text-align: right;
+    padding-right: 0.5em;
+    border-right: 1px dashed gray;
 }
 
 .sessions .cell {
@@ -37,16 +46,29 @@ table.payment-summary {
     height: 1em;
 }
 
+.sessions .header-cell {
+    text-align: center;
+    font-size: 70%;
+}
+
+.sessions .row.saturday {
+    background-color: beige;
+}
+
+.sessions .row.sunday {
+    background-color: bisque;
+}
+
 .sessions .cell:not(:first-child) {
     border-left: 1px gray dashed;    
 }
 
 .sessions .cell.filled {
-    background-color: cornflowerblue;
+    background-color: blue;
 }
 
 .sessions .cell.filled.evening {
-    background-color: blue;
+    background-color: cornflowerblue;
 }
 
 </style>
@@ -57,17 +79,17 @@ table.payment-summary {
     <a class="pure-button" href="{{url_for('list_reports')}}">Back to list</a>
 </div>
 
-<h1>Monthly Payment</h1>
+<h1>Monthly Payment {{report_name}}</h1>
 
 <table class="payment-summary pure-table">
     <thead>
         <tr>
             <td>Person ID</td>
             <td>Name</td>
-            <td>Month Total</td>
             <td>Base</td>
             <td>Evening</td>
             <td>Overtime</td>
+            <td>Month Total</td>
         </tr>
     </thead>
 
@@ -76,14 +98,16 @@ table.payment-summary {
         <tr data-person-id="{{person_id}}" onclick="viewDetail('{{person_id}}')">
             <td>{{person_id}}</td>
             <td>{{report.name}}</td>
-            <td>{{report.month_total}}</td>
             <td>{{report.base_total}}</td>
             <td>{{report.evening_total}}</td>
             <td>{{report.overtime_total}}</td>
+            <td>{{report.month_total}}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<hr>
 
 {% raw %}
 <div id="app" v-cloak>
@@ -108,7 +132,16 @@ table.payment-summary {
 
     <div class="sessions">
         <h3>Working Sessions</h3>
-        <div class="pure-g row" v-for="day in 30">
+        <div class="pure-g row">
+            <div class="pure-u day">*</div>
+            <div class="pure-u-1">
+                <div class="pure-g">
+                    <div v-for="hour in 24" 
+                        class="header-cell pure-u-1-24">{{hour}}:00</div>
+                </div>
+            </div>
+        </div>
+        <div class="pure-g row" v-for="day in 30" v-bind:class="{saturday: dayOfWeek(day) == 6, sunday: dayOfWeek(day) == 0}">
             <div class="pure-u day">{{day}}</div>
             <div class="pure-u-1">
                 <div class="pure-g">
@@ -139,7 +172,10 @@ table.payment-summary {
 
 <script>
     var wage = {{wage_json | tojson | safe}};
-
+    var punchcards = {{punchcards | tojson | safe}};
+    var year = {{year}};
+    var month = {{month}} - 1;
+    
     // parse the dates from text to object
     for (person_id in wage) {
         wage[person_id].sessions = wage[person_id].sessions.map(function(tuple) {
@@ -149,9 +185,9 @@ table.payment-summary {
             };
         });
     }
-
-    var punchcards = {{punchcards | tojson | safe}};
+    
     var activeId = Object.keys(wage)[0];
+    
 
     Vue.component('punchcard', {
         template: '#template-punchcard',
@@ -165,7 +201,7 @@ table.payment-summary {
         },
         methods: {
             isWorking: function(day, hour) {
-                var moment = new Date(2014, 2, day, hour);
+                var moment = new Date(year, month, day, hour);
                 
                 // fixme: this code is pretty inefficient
                 for (var i = 0; i < this.sessions.length; i++) {
@@ -180,6 +216,10 @@ table.payment-summary {
 
             isEvening: function(hour) {
                 return hour < 6 || hour >= 18;
+            },
+
+            dayOfWeek: function(day) {
+                return new Date(year, month, day).getDay();
             }
         },
         computed: {

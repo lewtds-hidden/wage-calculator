@@ -45,7 +45,9 @@ def view_report(year, month):
     punchcard_matrices = {person_id: generate_punchcard_matrix(pay[person_id]["sessions"]) for person_id in pay}
 
     return render_template("view_report.html", 
-        report_name="{}/{}".format(year, month),
+        report_name="{}/{}".format(year, str(month).zfill(2)),
+        year=year,
+        month=month,
         wage=sorted(pay.items(), key=lambda t: t[0]),
         wage_json=pay,
         punchcards=punchcard_matrices)
