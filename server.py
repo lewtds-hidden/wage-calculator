@@ -25,8 +25,6 @@ def generate_punchcard_matrix(work_sessions):
             
             start += timedelta(hours=1)
 
-
-    print(max_value)
     # normalize to the largest value
     if max_value > 0:
         for day in range(0, 7):
