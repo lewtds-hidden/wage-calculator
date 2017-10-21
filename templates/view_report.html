@@ -211,7 +211,7 @@ table.payment-summary tr {
         });
     }
     
-    var activeId = Object.keys(wage)[0];
+    var firstId = Object.keys(wage)[0];
     
 
     Vue.component('punchcard', {
@@ -222,7 +222,7 @@ table.payment-summary tr {
     var app = new Vue({
         el: '#app',
         data: {
-            activeId: activeId,
+            activeId: firstId,
         },
         methods: {
             isWorking: function(day, hour) {
@@ -268,7 +268,7 @@ table.payment-summary tr {
     var $paymentSummary = document.querySelector("table.payment-summary");
     var paymentBreakdownChart;
 
-    viewDetail(activeId);
+    viewDetail(firstId);
 
     function viewDetail(personId) {
         app.activeId = personId;
