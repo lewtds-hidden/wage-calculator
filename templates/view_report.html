@@ -152,7 +152,7 @@ table.payment-summary tr {
             <div class="pure-u-1">
                 <div class="pure-g">
                     <div v-for="hour in 24" 
-                        class="header-cell pure-u-1-24">{{hour}}:00</div>
+                        class="header-cell pure-u-1-24">{{hour - 1}}:00</div>
                 </div>
             </div>
         </div>
@@ -162,7 +162,7 @@ table.payment-summary tr {
                 <div class="pure-g">
                     <div v-for="hour in 24" 
                         class="cell pure-u-1-24"
-                        v-bind:class="{filled: isWorking(day, hour), evening: isEvening(hour)}"> </div>
+                        v-bind:class="{filled: isWorking(day, hour - 1), evening: isEvening(hour - 1)}"> </div>
                 </div>
             </div>
         </div>
@@ -182,7 +182,7 @@ table.payment-summary tr {
 
     <tr class="hour">
         <td></td>
-        <td v-for="hour in 24">{{hour}}:00</td>
+        <td v-for="hour in 24">{{hour - 1}}:00</td>
     </tr>
 </table>
 </script>
@@ -222,7 +222,8 @@ table.payment-summary tr {
         },
         methods: {
             isWorking: function(day, hour) {
-                var moment = new Date(year, month, day, hour);
+                var moment = new Date(year, month, day);
+                moment.setUTCHours(hour);
                 
                 // fixme: this code is pretty inefficient
                 for (var i = 0; i < this.sessions.length; i++) {
