@@ -87,6 +87,10 @@ table.payment-summary tr {
     border-right: 1px solid gray;
     padding-right: 0.5em;
 }
+
+.payment-breakdown-chart canvas {
+    margin: auto;
+}
 </style>
 {% endblock %}
 
@@ -290,7 +294,8 @@ table.payment-summary tr {
                         wage[personId].base_total,
                         wage[personId].evening_total,
                         wage[personId].overtime_total,
-                        ]
+                    ],
+                    backgroundColor: ['#5eb95e', '#1f8dd6', 'rgb(128, 88, 165)']
                 }],
 
                 labels: ["Base", "Evening", "Overtime"]
