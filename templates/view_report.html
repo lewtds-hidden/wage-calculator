@@ -4,8 +4,18 @@
 Wage Report {{report_name}}
 {% endblock %}
 
+{% block head %}
+{{super()}}
+<style>
+.detail-report > * {
+    display: none;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<table class="pure-table">
+<a class="pure-button" href="{{url_for('list_reports')}}">Back to list</a>
+<table class="payment-summary pure-table">
     <thead>
         <tr>
             <td>Person ID</td>
@@ -19,7 +29,7 @@ Wage Report {{report_name}}
 
     <tbody>
         {% for person_id, report in wage %}
-        <tr>
+        <tr data-person-id="{{person_id}}" onclick="viewDetail('{{person_id}}')">
             <td>{{person_id}}</td>
             <td>{{report.name}}</td>
             <td>{{report.month_total}}</td>
@@ -31,35 +41,61 @@ Wage Report {{report_name}}
     </tbody>
 </table>
 
+<div class="detail-report">
+    {% for person_id, _ in wage %}
+    <div data-person-id="{{person_id}}">
+        <h3>Viewing detail report for {{wage_json[person_id]["name"]}}</h3>
+        
 
-{% for person_id, _ in wage %}
-<table>
-    {% for day in range(0, 7) %}
-    <tr>
-        <td>{{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][day]}}</td>
-        {% for hour in range(0, 24) %}
-        <td style="transform: scale({{punchcards[person_id][day][hour]}}); opacity: {{punchcards[person_id][day][hour]}}; width: 20px; height: 20px;">
-            <svg height="20" width="20">
-            <circle cx="10" cy="10" r="10"  stroke-width="3" fill="black" />
-            </svg> 
-        </td> 
-        {% endfor %}
-    </tr>
+        <table>
+            {% for day in range(0, 7) %}
+            <tr>
+                <td>{{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][day]}}</td>
+                {% for hour in range(0, 24) %}
+                <td style="transform: scale({{punchcards[person_id][day][hour]}}); opacity: {{punchcards[person_id][day][hour]}}; width: 20px; height: 20px;">
+                    <svg height="20" width="20">
+                    <circle cx="10" cy="10" r="10"  stroke-width="3" fill="black" />
+                    </svg> 
+                </td> 
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        
+            <tr>
+                <td></td>
+                {% for hour in range(0, 24) %}
+                <td>{{hour}}</td>
+                {% endfor %}
+            </tr>
+        </table>
+    </div>
     {% endfor %}
-
-    <tr>
-        <td></td>
-        {% for hour in range(0, 24) %}
-        <td>{{hour}}</td>
-        {% endfor %}
-    </tr>
-</table>
-<hr>
-{% endfor %}
-
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
 <script>
     var wage = {{wage_json | tojson | safe}};
+
+    var activeId = Object.keys(wage)[0];
+    var $activeReport;
+    var $activeSummaryRow;
+
+    viewDetail(activeId);
+
+    function viewDetail(personId) {
+        activeId = personId;
+
+        if ($activeReport)
+            $activeReport.style.display = "none";
+
+        $activeReport = document.querySelector(".detail-report [data-person-id='" + activeId + "']");
+        $activeReport.style.display = "block";
+
+        if ($activeSummaryRow)
+            $activeSummaryRow.className = "";
+
+        $activeSummaryRow = document.querySelector("table.payment-summary tr[data-person-id='" + activeId + "']");
+        $activeSummaryRow.className = "pure-table-odd";
+    }
 </script>
 {% endblock %}
