@@ -7,18 +7,29 @@ Wage Report {{report_name}}
 {% block head %}
 {{super()}}
 <style>
+[v-cloak] { display: none }
+
 .detail-report > * {
     display: none;
 }
 
 table.payment-summary {
     width: 100%;
+    margin-bottom: 1em;
 }
+
+.controls {
+    margin-bottom: 1em;
+}
+
 </style>
 {% endblock %}
 
 {% block content %}
-<a class="pure-button" href="{{url_for('list_reports')}}">Back to list</a>
+<div class="controls">
+    <a class="pure-button" href="{{url_for('list_reports')}}">Back to list</a>
+</div>
+
 <table class="payment-summary pure-table">
     <thead>
         <tr>
@@ -45,80 +56,124 @@ table.payment-summary {
     </tbody>
 </table>
 
-<div class="detail-report">
-    {% for person_id, _ in wage %}
-    <div data-person-id="{{person_id}}">
-        <h3>{{wage_json[person_id]["name"]}}</h3>
+{% raw %}
+<div id="app" v-cloak>
+    <h2>
+        {{name}}
+    </h2>
 
-        <div class="pure-g">
-            <div class="pure-u-2-3">
-                <table>
-                    {% for day in range(0, 7) %}
-                    <tr>
-                        <td>{{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][day]}}</td>
-                        {% for hour in range(0, 24) %}
-                        <td style="transform: scale({{punchcards[person_id][day][hour]}}); opacity: {{punchcards[person_id][day][hour]}}; width: 20px; height: 20px;">
-                            <svg height="20" width="20">
-                            <circle cx="10" cy="10" r="10"  stroke-width="3" fill="black" />
-                            </svg> 
-                        </td> 
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                
-                    <tr>
-                        <td></td>
-                        {% for hour in range(0, 24) %}
-                        <td>{{hour}}</td>
-                        {% endfor %}
-                    </tr>
-                </table>
-            </div>
-            <div class="pure-u-1-3">
-                <div class="payment-breakdown-chart">
-                    <canvas width="400" height="400"></canvas>
-                </div>
-            </div>
+    <div class="pure-g">
+        <div class="pure-u-2-3">
+            <punchcard :matrix="punchcard"></punchcard>
         </div>
 
+
+        <div class="pure-u-1-3">
+            <div class="payment-breakdown-chart">
+                <canvas width="400" height="400"></canvas>
+            </div>
+        </div>
     </div>
-    {% endfor %}
+
+    <div class="sessions">
+        <div v-for="day in 30" class="pure-g">
+            <div v-for="hour in 24" class="pure-u-1-24">{{ isWorking(day, hour) ? "x" : "" }}</div>
+        </div>
+    </div>
 </div>
 
+<script id="template-punchcard" type="text/x-template">
+<table>
+    <tr v-for="day in matrix">
+        <td v-for="hour in day">
+            <svg height="20" width="20" v-bind:style="'transform: scale(' + hour + '); opacity: ' + hour + ';'">
+            <circle cx="10" cy="10" r="10"  stroke-width="3" fill="black" />
+            </svg>
+        </td>
+    </tr>
+</table>
+</script>
+{% endraw %}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
-<script src="https://unpkg.com/vue"></script>
+<script src="{{url_for('static', filename='lib/vue.js')}}"></script>
 
 <script>
     var wage = {{wage_json | tojson | safe}};
 
+    // parse the dates from text to object
+    for (person_id in wage) {
+        wage[person_id].sessions = wage[person_id].sessions.map(function(tuple) {
+            return {
+                start: new Date(tuple[0]),
+                end: new Date(tuple[1])
+            };
+        });
+    }
+
+    var punchcards = {{punchcards | tojson | safe}};
     var activeId = Object.keys(wage)[0];
-    var $activeReport;
+
+    Vue.component('punchcard', {
+        template: '#template-punchcard',
+        props: ['matrix']
+    });
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            activeId: activeId,
+        },
+        methods: {
+            isWorking: function(day, hour) {
+                var moment = new Date(2014, 2, day, hour);
+                
+                // fixme: this code is pretty inefficient
+                for (var i = 0; i < this.sessions.length; i++) {
+                    var session = this.sessions[i];
+                    if (moment > session.start && moment < session.end) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        },
+        computed: {
+            punchcard: function() {
+                return punchcards[this.activeId];
+            },
+
+            sessions: function() {
+                return wage[this.activeId].sessions;
+            },
+
+            name: function() {
+                return wage[this.activeId].name;
+            }
+        }
+    });
+
+
     var $activeSummaryRow;
-    var $detailReport = document.querySelector(".detail-report");
     var $paymentSummary = document.querySelector("table.payment-summary");
     var paymentBreakdownChart;
 
     viewDetail(activeId);
 
     function viewDetail(personId) {
-        activeId = personId;
-
-        if ($activeReport)
-            $activeReport.style.display = "none";
-
-        $activeReport = $detailReport.querySelector("[data-person-id='" + activeId + "']");
-        $activeReport.style.display = "block";
+        app.activeId = personId;
 
         if ($activeSummaryRow)
             $activeSummaryRow.className = "";
 
-        $activeSummaryRow = $paymentSummary.querySelector("tr[data-person-id='" + activeId + "']");
+        $activeSummaryRow = $paymentSummary.querySelector("tr[data-person-id='" + personId + "']");
         $activeSummaryRow.className = "pure-table-odd";
 
         if (paymentBreakdownChart)
             paymentBreakdownChart.destroy();
 
-        var ctx = $activeReport.querySelector(".payment-breakdown-chart canvas").getContext("2d");
+        var ctx = document.querySelector(".payment-breakdown-chart canvas").getContext("2d");
         paymentBreakdownChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
