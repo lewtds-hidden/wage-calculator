@@ -30,4 +30,10 @@ Wage Report {{report_name}}
         {% endfor %}
     </tbody>
 </table>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
+<script>
+    var wage = {{wage_json | tojson | safe}};
+</script>
 {% endblock %}

@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% for report in reports %}
-<a href="{{ url_for('view_report', report_name=report) }}">{{report}}</a>
+{% for year, month in reports %}
+<ul>
+    <li><a href="{{ url_for('view_report', month=month, year=year) }}">{{year}}/{{month}}</a></li>
+</ul>
+
 {% endfor %}
+
+<button class="pure-button">Upload more data</button>
 {% endblock %}
