@@ -71,6 +71,22 @@ table.payment-summary tr {
     background-color: cornflowerblue;
 }
 
+.punchcard .hour {
+    font-size: 50%;
+    opacity: 0.8;
+}
+
+.punchcard .hour td:not(:first-child) {
+    border-top: 1px solid gray;    
+}
+
+.punchcard .day {
+    text-align: right;
+    font-size: 80%;
+    font-weight: bold;
+    border-right: 1px solid gray;
+    padding-right: 0.5em;
+}
 </style>
 {% endblock %}
 
@@ -121,7 +137,6 @@ table.payment-summary tr {
             <punchcard :matrix="punchcard"></punchcard>
         </div>
 
-
         <div class="pure-u-1-3">
             <h3>Payment Breakdown</h3>
             <div class="payment-breakdown-chart">
@@ -155,19 +170,25 @@ table.payment-summary tr {
 </div>
 
 <script id="template-punchcard" type="text/x-template">
-<table>
-    <tr v-for="day in matrix">
+<table class="punchcard">
+    <tr v-for="(day, day_index) in matrix">
+        <td class="day">{{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][day_index]}}</td>
         <td v-for="hour in day">
             <svg height="25" width="25" v-bind:style="'transform: scale(' + hour + '); opacity: ' + hour + ';'">
             <circle cx="10" cy="10" r="10"  stroke-width="3" fill="black" />
             </svg>
         </td>
     </tr>
+
+    <tr class="hour">
+        <td></td>
+        <td v-for="hour in 24">{{hour}}:00</td>
+    </tr>
 </table>
 </script>
 {% endraw %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
+<script src="{{url_for('static', filename='lib/Chart.bundle.min.js')}}"></script>
 <script src="{{url_for('static', filename='lib/vue.js')}}"></script>
 
 <script>
@@ -256,6 +277,9 @@ table.payment-summary tr {
         if (paymentBreakdownChart)
             paymentBreakdownChart.destroy();
 
+        // #5eb95e green 
+        // #1f8dd6 blue
+        // rgb(128, 88, 165) purple
         var ctx = document.querySelector(".payment-breakdown-chart canvas").getContext("2d");
         paymentBreakdownChart = new Chart(ctx, {
             type: 'doughnut',
