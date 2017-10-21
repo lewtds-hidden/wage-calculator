@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+Wage Report {{report_name}}
+{% endblock %}
+
+{% block content %}
+<table class="pure-table">
+    <thead>
+        <tr>
+            <td>Person ID</td>
+            <td>Name</td>
+            <td>Month Payment</td>
+            <td>Base Payment</td>
+            <td>Evening Payment</td>
+            <td>Overtime Payment</td>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for person_id, report in wage %}
+        <tr>
+            <td>{{person_id}}</td>
+            <td>{{report.name}}</td>
+            <td>{{report.month_total}}</td>
+            <td>{{report.base_total}}</td>
+            <td>{{report.evening_total}}</td>
+            <td>{{report.overtime_total}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

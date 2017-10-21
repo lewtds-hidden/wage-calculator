@@ -67,11 +67,3 @@ def test_overtime_pay():
     assert overtime_pay(12, OVERTIME_STOPS, OVERTIME_RATES) == 5.625
     assert overtime_pay(13, OVERTIME_STOPS, OVERTIME_RATES) == 9.375
 
-
-def test_totalpay():
-    assert total_pay(datetime(2014, 3, 6, 7, 0),
-                     datetime(2014, 3, 6, 10, 0)) == 11.25
-
-    # night shift
-    assert total_pay(datetime(2014, 3, 6, 18, 0),
-                     datetime(2014, 3, 6, 19, 0)) == 4.9

@@ -55,37 +55,12 @@ def overtime_pay(total_hours, stops, rates):
     return sum(payments)
 
 
-def total_pay(start_datetime, end_datetime):
+def daily_pay(start_datetime, end_datetime):
     delta = end_datetime - start_datetime
     total_hours = delta.total_seconds() / 3600
     base_pay = total_hours * BASE_RATE
     evening_pay = evening_hours(start_datetime, end_datetime) * EVENING_EXTRA_RATE
-
-    return base_pay + \
-        evening_pay + \
-        overtime_pay(total_hours, OVERTIME_STOPS, OVERTIME_RATES)
-
-
-# pay = {}
-with open("HourList201403.csv", "r") as csvfile:
-    reader = csv.DictReader(csvfile, delimiter=",")
-
-    # for rec in reader:
-    #     start_time, end_time = parse_time(rec["Date"], rec["Start"], rec["End"])
-    #     if rec['Person ID'] not in pay:
-    #         pay[rec['Person ID']] = {
-    #             "name": rec["Person Name"],
-    #             "monthly_pay": 0
-    #         }
-
-    #     pay[rec['Person ID']]["monthly_pay"] += total_pay(start_time, end_time)
-
-    # print (pay)
-
-    person_id = lambda rec: rec["Person ID"]
-
-    for k, g in groupby(sorted(reader, key=person_id), person_id):
-        times = (parse_time(rec["Date"], rec["Start"], rec["End"]) for rec in g)
-        month_total = sum(map(lambda args: total_pay(*args), times))
-
-        print(k, month_total)
+    overtime = overtime_pay(total_hours, OVERTIME_STOPS, OVERTIME_RATES)
+    total_pay = base_pay + evening_pay + overtime
+        
+    return (total_pay, base_pay, evening_pay, overtime)
