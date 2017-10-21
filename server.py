@@ -1,9 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, abort
 
 from persistence import get_reports, get_report
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def list_reports():
@@ -14,7 +13,8 @@ def upload_data():
 
 @app.route("/report/<int:year>/<int:month>")
 def view_report(year, month):
-    # todo: Validate year, month
+    if (year, month) not in get_reports():
+        abort(404)
 
     pay = get_report(year, month)
 
