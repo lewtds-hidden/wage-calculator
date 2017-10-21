@@ -32,6 +32,24 @@ Wage Report {{report_name}}
 </table>
 
 
+{% for person_id, _ in wage %}
+<table>
+    {% for day in range(0, 7) %}
+    <tr>
+        {% for hour in range(0, 24) %}
+        <td style="transform: scale({{punchcards[person_id][day][hour]}}); width: 20px; height: 20px;">
+            <svg height="20" width="20">
+            <circle cx="10" cy="10" r="10"  stroke-width="3" fill="black" />
+            </svg> 
+        </td> 
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+<hr>
+{% endfor %}
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
 <script>
     var wage = {{wage_json | tojson | safe}};
