@@ -59,6 +59,9 @@ def get_report(db, year, month):
         "overtime_total": 0
     })
 
+    # this query will create rows of this format:
+    # 8|Gregory Francis|2014-03-01 10:00:00,2014-03-03 11:00:00,2014-03-05 14:00|2014...
+    # 9|Pamela Wells|2014-03-01 09:00:00,2014-03-04 01:00:00,2014-03-06 13:00:00|2014...
     query = """
     SELECT employee_id, name, group_concat(start_time) AS start_times, group_concat(end_time) AS end_times 
         FROM employee NATURAL JOIN work_session
