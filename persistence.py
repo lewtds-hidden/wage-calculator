@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from faker import Faker
 
 from wage import parse_time, daily_pay
+from util import split_iter
 
 fake = Faker()
 
@@ -56,7 +57,7 @@ def get_reports(db):
 
     return reports
 
-def get_report(year, month):
+def get_report(db, year, month):
     pay = defaultdict(lambda: {
         "month_total": 0, 
         "base_total": 0, 
@@ -64,21 +65,30 @@ def get_report(year, month):
         "overtime_total": 0
     })
 
-    with open("HourList{}{}.csv".format(year, str(month).zfill(2)), "r") as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=",")
-        person_id = lambda rec: rec["Person ID"]
-        
-        for key, group in groupby(sorted(reader, key=person_id), person_id):
-            group, g_temp = tee(group)
-            pay[key]["name"] = next(g_temp)["Person Name"]
-            sessions = [parse_time(rec["Date"], rec["Start"], rec["End"]) for rec in group]
-            pay[key]["sessions"] = sessions
+    query = """
+    SELECT employee_id, name, group_concat(start_time) AS start_times, group_concat(end_time) AS end_times 
+        FROM employee NATURAL JOIN work_session
+        WHERE strftime("%Y %m", start_time) = ?
+        GROUP BY employee_id
+    """
 
-            for start_time, end_time in sessions:
-                day_pay, base_pay, evening_pay, overtime_pay = daily_pay(start_time, end_time)
-                pay[key]["month_total"] += day_pay
-                pay[key]["base_total"] += base_pay
-                pay[key]["evening_total"] += evening_pay
-                pay[key]["overtime_total"] += overtime_pay
-    
+    padded_month = str(month).zfill(2)
+
+    for row in db.execute(query, ("{} {}".format(year, padded_month),)):
+        key = row["employee_id"]
+        pay[key]["name"] = row["name"]
+        # 2014-03-11 23:00:00
+        parse_func = lambda timestr: datetime.strptime(timestr, "%Y-%m-%d %H:%M:%S")
+        start_datetimes = map(parse_func, split_iter(row["start_times"], r"[^,]+"))
+        end_datetimes = map(parse_func, split_iter(row["end_times"], r"[^,]+"))
+
+        sessions = list(zip(start_datetimes, end_datetimes))
+        pay[key]["sessions"] = sessions
+        for start_time, end_time in sessions:
+            day_pay, base_pay, evening_pay, overtime_pay = daily_pay(start_time, end_time)
+            pay[key]["month_total"] += day_pay
+            pay[key]["base_total"] += base_pay
+            pay[key]["evening_total"] += evening_pay
+            pay[key]["overtime_total"] += overtime_pay
+
     return pay
