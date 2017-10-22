@@ -200,7 +200,7 @@ table.payment-summary tr {
     var wage = {{wage_json | tojson | safe}};
     var punchcards = {{punchcards | tojson | safe}};
     var year = {{year}};
-    var month = {{month}} - 1;
+    var month = {{month - 1}};
     
     // parse the dates from text to object
     for (person_id in wage) {
@@ -227,7 +227,7 @@ table.payment-summary tr {
         },
         methods: {
             isWorking: function(day, hour) {
-                var moment = new Date(year, month, day);
+                var moment = new Date(year, month, day + 1);
                 moment.setUTCHours(hour);
                 
                 // fixme: this code is pretty inefficient
