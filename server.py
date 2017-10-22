@@ -62,8 +62,11 @@ def view_report(year, month):
     if (year, month) not in persistence.get_reports(get_db()):
         abort(404)
 
-    pay = persistence.get_report(year, month)
-    punchcard_matrices = {person_id: generate_punchcard_matrix(pay[person_id]["sessions"]) for person_id in pay}
+    pay = persistence.get_report(get_db(), year, month)
+    punchcard_matrices = {
+        person_id: generate_punchcard_matrix(pay[person_id]["sessions"]) 
+            for person_id in pay
+    }
 
     return render_template("view_report.html", 
         report_name="{}/{}".format(year, str(month).zfill(2)),
