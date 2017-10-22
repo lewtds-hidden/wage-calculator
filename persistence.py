@@ -39,8 +39,31 @@ def prefill_data(db):
         db.executemany("INSERT INTO work_session (employee_id, start_time, end_time) VALUES (?, ?, ?)", sessions)
 
 
-def import_from_csv(csv_file):
-    pass
+def import_from_csv(db, csv_file):
+    reader = csv.DictReader(csv_file, delimiter=",")
+    employees = defaultdict(dict)
+    sessions = []
+
+    with db:
+        for row in reader:
+            pid = row["Person ID"]
+            employees[pid]["name"] = row["Person Name"]
+            start_time, end_time = parse_time(row["Date"], row["Start"], row["End"])
+            sessions.append((pid, start_time, end_time))
+        
+        for employee_id, employee in employees.items():
+            has_employee = db.execute(
+                    "SELECT 1 FROM employee WHERE employee_id = ?", 
+                    (employee_id,)).fetchone()
+
+            if not has_employee:
+                db.execute(
+                    "INSERT INTO employee (employee_id, name) VALUES (?, ?)", 
+                    (employee_id, employee["name"]))
+
+        db.executemany(
+            "INSERT INTO work_session (employee_id, start_time, end_time) VALUES (?, ?, ?)",
+            sessions)
 
 
 def get_reports(db):

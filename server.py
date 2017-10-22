@@ -37,6 +37,14 @@ def prefill_data():
     persistence.prefill_data(get_db())
     return redirect(url_for('list_reports'))
 
+
+@app.route('/data/import_from_csv', methods=["POST"])
+def import_from_csv():
+    with open("HourList201403.csv", "r") as csv_file:
+        persistence.import_from_csv(get_db(), csv_file)
+    
+    return redirect(url_for('list_reports'))
+
 def generate_punchcard_matrix(work_sessions):
     matrix = [[0 for hour in range(0, 24)] for day in range(0, 7)]
     max_value = 0
