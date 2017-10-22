@@ -75,6 +75,7 @@ def get_reports(db):
     return reports
 
 def get_report(db, year, month):
+    # the key is employee_id
     pay = defaultdict(lambda: {
         "month_total": 0, 
         "base_total": 0, 
