@@ -29,11 +29,7 @@ def prefill_data(db):
         session_start = start_date + timedelta(hours=random.randint(0, 72))
         while session_start < end_date:
             session_end = session_start + timedelta(hours=random.randint(1, 12))
-
-            print(session_start, session_end, session_end > session_start)
-
             sessions.append((person_id, session_start, session_end))
-
             session_start = session_end + timedelta(hours=random.randint(1, 72))
 
     random.shuffle(sessions)
@@ -52,8 +48,6 @@ def get_reports(db):
     for row in db.execute("SELECT DISTINCT strftime('%Y %m', start_time) FROM work_session"):
         year, month = row[0].split(" ")
         reports.append((int(year), int(month)))
-
-    print(reports)
 
     return reports
 
