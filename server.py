@@ -1,17 +1,40 @@
-from flask import Flask, render_template, abort
-from datetime import timedelta 
+import sqlite3
+from flask import Flask, render_template, abort, url_for, g, redirect
+from datetime import timedelta
 
-from persistence import get_reports, get_report
+
+import persistence
 
 app = Flask(__name__)
 
+DATABASE = 'wage.db'
+
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+    return db
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
 @app.route('/')
 def list_reports():
-    return render_template("list_reports.html", reports=get_reports())
+    return render_template("list_reports.html", reports=persistence.get_reports(get_db()))
 
-def upload_data():
-    pass
 
+@app.route('/data/reset', methods=["POST"])
+def reset_data():
+    persistence.reset_data(get_db())
+    return redirect(url_for('list_reports'))
+
+@app.route('/data/prefill', methods=["POST"])
+def prefill_data():
+    persistence.prefill_data(get_db())
+    return redirect(url_for('list_reports'))
 
 def generate_punchcard_matrix(work_sessions):
     matrix = [[0 for hour in range(0, 24)] for day in range(0, 7)]
@@ -36,10 +59,10 @@ def generate_punchcard_matrix(work_sessions):
 
 @app.route("/report/<int:year>/<int:month>")
 def view_report(year, month):
-    if (year, month) not in get_reports():
+    if (year, month) not in persistence.get_reports(get_db()):
         abort(404)
 
-    pay = get_report(year, month)
+    pay = persistence.get_report(year, month)
     punchcard_matrices = {person_id: generate_punchcard_matrix(pay[person_id]["sessions"]) for person_id in pay}
 
     return render_template("view_report.html", 

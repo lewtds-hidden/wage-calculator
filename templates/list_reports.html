@@ -14,9 +14,14 @@
 {% block content %}
 <div class="controls">
     <button class="pure-button pure-button-primary">Upload more data</button>
+    
+    <form action="{{url_for('reset_data')}}" method="POST">
+        <button class="pure-button" type="submit">Reset Data</button>
+    </form>
 
-    <button class="pure-button">Reset data</button>
-    <button class="pure-button">Prefill data</button>
+    <form action="{{url_for('prefill_data')}}" method="POST">
+        <button class="pure-button" type="submit">Prefill Data</button>
+    </form>
 </div>
 
 {% for year, month in reports %}
