@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>500</h1>
+<span>Unexpected Error :(</span>
+<p>
+    An error occurred while processing your request. We sincerely apologize. An engineer has been notified. We will try to fix this as soon as possible.
+    Meanwhile, you can <a href="{{url_for('list_reports')}}">click here to go back.</a>.
+</p>
+{% endblock %}

@@ -6,22 +6,44 @@ from datetime import timedelta
 import persistence
 
 app = Flask(__name__)
-app.secret_key = "lol"
 
-DATABASE = 'wage.db'
+app.config["DATABASE"] = "wage_dev.db"
+app.config["SECRET_KEY"] = "lol"
+app.config.from_envvar('APPLICATION_SETTINGS_FILE', silent=True)
+
 
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+        db = sqlite3.connect(app.config["DATABASE"], detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+        g._database = db
         db.row_factory = sqlite3.Row
     return db
+
 
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
+
+
+@app.before_first_request
+def setup():
+    persistence.do_migration(get_db())
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def page_not_found(e):
+    return render_template('500.html'), 500
+
+@app.route('/500')
+def trigger500():
+    abort(500, "hihi")
 
 @app.route('/')
 def list_reports():
@@ -68,7 +90,7 @@ def import_from_HourList201403_csv():
     persistence.reset_data(get_db())
     with open("HourList201403.csv", "r") as csv_file:
         persistence.import_from_csv(get_db(), csv_file)
-    
+
     flash("The example data set from HourList201403.csv was loaded.", "menu/info")
     return redirect(url_for('list_reports'))
 

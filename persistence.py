@@ -1,5 +1,6 @@
 import csv
 import sqlite3
+import os
 from itertools import groupby, tee
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -16,6 +17,16 @@ class WrongFileFormat(Exception):
 
 class InconsistentData(Exception):
     pass
+
+
+def do_migration(db):
+    # FIXME Use a real migration system
+    with db:
+        has_meta = db.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='meta' COLLATE NOCASE"
+            ).fetchone()
+        if not has_meta:
+            db.executescript(open("db_scripts/001_init.sql", "r").read())
 
 
 def reset_data(db):
