@@ -31,11 +31,32 @@
             margin-top: 2em;
             margin-bottom: 2em;
         }
+
+        .menu {
+            margin-left: -210px;
+            width: 200px;
+            position: fixed;
+        }
+
+        .menu .menu-button,
+        .menu .menu-text {
+            padding: 0.5em 1em;
+        }
+
+        .menu .menu-button .pure-button {
+            width: 100%;
+        }
+
+        .menu .menu-text {
+            color: #565d64;
+            font-size: 90%;
+        }
     </style>
     {% endblock %}
 </head>
 <body>
     <div class="content">
+
         {% block content %}{% endblock %}
     </div>
 </body>

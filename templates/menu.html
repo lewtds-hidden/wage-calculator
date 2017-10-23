@@ -1,0 +1,29 @@
+<div class="menu pure-menu">
+    <div class="pure-menu-heading">Wage Calculator</div>
+
+    <form class="menu-button" action="{{url_for('import_from_csv')}}" method="POST">
+        <button class="pure-button" type="submit">Upload more data</button>
+    </form>
+
+    <form class="menu-button" action="{{url_for('reset_data')}}" method="POST">
+        <button class="pure-button" type="submit">Reset Data</button>
+    </form>
+
+    <form class="menu-button" action="{{url_for('prefill_data')}}" method="POST">
+        <button class="pure-button" type="submit">Fill Random Data</button>
+    </form>
+
+    <div class="pure-menu-heading">Wage Reports</div>
+
+    <ul class="pure-menu-list">
+        {% for year, month in menu.reports %}
+        <li class="pure-menu-item">
+            <a href="{{ url_for('view_report', month=month, year=year) }}" class="pure-menu-link">{{year}}/{{month}}</a>
+        </li>
+        {% else %}
+        <div class="menu-text">
+            There is no data yet. Use the controls above to add more data or generate some fake data.
+        </div>
+        {% endfor %}
+    </ul>
+</div>

@@ -4,34 +4,29 @@
 {{super()}}
 
 <style>
-    .controls {
-        margin-bottom: 1em;
+    main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+    }
+
+    .instruction {
+        width: 30em;
+        position: static;
+        color: #565d64;
+        text-align: center;
     }
 </style>
 {% endblock %}
 
 
 {% block content %}
-<div class="controls">
-    <button class="pure-button pure-button-primary"></button>
-    
-    <form action="{{url_for('import_from_csv')}}" method="POST">
-        <button class="pure-button" type="submit">Upload more data</button>
-    </form>
-    <form action="{{url_for('reset_data')}}" method="POST">
-        <button class="pure-button" type="submit">Reset Data</button>
-    </form>
+{% include "menu.html" %}
 
-    <form action="{{url_for('prefill_data')}}" method="POST">
-        <button class="pure-button" type="submit">Fill Fake Data</button>
-    </form>
-</div>
-
-{% for year, month in reports %}
-<ul>
-    <li><a href="{{ url_for('view_report', month=month, year=year) }}">{{year}}/{{month}}</a></li>
-</ul>
-{% endfor %}
-
-
+<main>
+    <div class="instruction">
+        Select a month on the menu to view the detailed wage report for that month.
+    </div>
+</main>
 {% endblock %}

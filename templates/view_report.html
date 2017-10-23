@@ -96,10 +96,9 @@ table.payment-summary tr {
 {% endblock %}
 
 {% block content %}
-<div class="controls">
-    <a class="pure-button" href="{{url_for('list_reports')}}">Back to list</a>
-</div>
+{% include "menu.html" %}
 
+<main>
 <h1>Monthly Wage {{report_name}}</h1>
 
 <table class="payment-summary pure-table">
@@ -173,6 +172,8 @@ table.payment-summary tr {
         </div>
     </div>
 </div>
+</main>
+
 
 <script id="template-punchcard" type="text/x-template">
 <table class="punchcard">
