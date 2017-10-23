@@ -56,7 +56,7 @@ def overtime_pay(total_hours, stops, rates):
     return sum(payments)
 
 
-def daily_pay(start_datetime, end_datetime):
+def session_pay(start_datetime, end_datetime):
     delta = end_datetime - start_datetime
     total_hours = delta.total_seconds() / 3600
     base_pay = total_hours * BASE_RATE

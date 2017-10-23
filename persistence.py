@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from random import randint, shuffle
 from faker import Faker
 
-from wage import parse_time, daily_pay
+from wage import parse_time, session_pay
 from util import split_iter
 
 fake = Faker()
@@ -134,7 +134,7 @@ def get_report(db, year, month):
         sessions = list(zip(start_datetimes, end_datetimes))
         pay[key]["sessions"] = sessions
         for start_time, end_time in sessions:
-            day_pay, base_pay, evening_pay, overtime_pay = daily_pay(start_time, end_time)
+            day_pay, base_pay, evening_pay, overtime_pay = session_pay(start_time, end_time)
             pay[key]["month_total"] += day_pay
             pay[key]["base_total"] += base_pay
             pay[key]["evening_total"] += evening_pay
