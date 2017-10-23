@@ -15,7 +15,7 @@
 
     <div class="pure-menu-heading">Wage Reports</div>
 
-    <ul class="pure-menu-list">
+    <ul class="report-list pure-menu-list">
         {% for year, month in menu.reports %}
         <li class="pure-menu-item">
             <a href="{{ url_for('view_report', month=month, year=year) }}" class="pure-menu-link">{{year}}/{{month}}</a>
