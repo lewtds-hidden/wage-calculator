@@ -8,6 +8,7 @@ EVENING_EXTRA_RATE = 1.15
 OVERTIME_STOPS = [8, 2, 2]
 OVERTIME_RATES = [p * BASE_RATE for p in [0, 0.25, 0.5, 1]]
 
+
 def parse_time(date, start_time, end_time):
     start_time = datetime.strptime(date + " " + start_time, "%d.%m.%Y %H:%M")
     end_time = datetime.strptime(date + " " + end_time, "%d.%m.%Y %H:%M")

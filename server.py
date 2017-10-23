@@ -37,13 +37,16 @@ def setup():
 def page_not_found(e):
     return render_template('404.html'), 404
 
+
 @app.errorhandler(500)
 def page_not_found(e):
     return render_template('500.html'), 500
 
+
 @app.route('/500')
 def trigger500():
     abort(500, "hihi")
+
 
 @app.route('/')
 def list_reports():
@@ -56,6 +59,7 @@ def reset_data():
     flash("The database was reset.", "menu/info")
     return redirect(url_for('list_reports'))
 
+
 @app.route('/data/prefill', methods=["POST"])
 def prefill_data():
     start_date, end_date = persistence.prefill_data(get_db())
@@ -64,6 +68,7 @@ def prefill_data():
             .format(start_date.strftime(time_format), end_date.strftime(time_format)),
         "menu/info")
     return redirect(url_for('list_reports'))
+
 
 @app.route('/data/import_from_csv', methods=["POST"])
 def import_from_csv():
@@ -85,6 +90,7 @@ def import_from_csv():
 
     return redirect(url_for('list_reports'))
 
+
 @app.route('/data/import_HourList201403_csv', methods=["POST"])
 def import_from_HourList201403_csv():
     persistence.reset_data(get_db())
@@ -93,6 +99,7 @@ def import_from_HourList201403_csv():
 
     flash("The example data set from HourList201403.csv was loaded.", "menu/info")
     return redirect(url_for('list_reports'))
+
 
 def generate_punchcard_matrix(work_sessions):
     matrix = [[0 for hour in range(0, 24)] for day in range(0, 7)]

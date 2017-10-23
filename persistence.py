@@ -59,6 +59,7 @@ def prefill_data(db):
 
     return start_date, end_date
 
+
 def import_from_csv(db, csv_file):
     reader = csv.DictReader(csv_file, delimiter=",")
     employees = defaultdict(dict)
@@ -99,6 +100,7 @@ def get_reports(db):
         reports.append((int(year), int(month)))
 
     return reports
+
 
 def get_report(db, year, month):
     # the key is employee_id
