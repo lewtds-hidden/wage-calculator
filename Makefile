@@ -1,17 +1,12 @@
 PORT ?= 5000
 
 run-dev:
-	export FLASK_DEBUG=True
-	make run
+	make run FLASK_DEBUG=True
 
 run-prod:
-	export APPLICATION_SETTINGS_FILE=settings_prod.cfg
-	make run
+	make run APPLICATION_SETTINGS_FILE=settings_prod.cfg
 
 run:
-	pwd
-	ls
-	export FLASK_APP=server.py
-	flask run -p ${PORT}
+	FLASK_APP=server.py flask run -p ${PORT}
 
 .PHONY: run run-dev run-prod
