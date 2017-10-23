@@ -1,1 +1,1 @@
-web: ./run_prod.sh -p $PORT
+web: make run-prod
