@@ -2,4 +2,4 @@
 
 export APPLICATION_SETTINGS_FILE=settings_prod.cfg
 
-exec flask run
+exec flask run "$@"
