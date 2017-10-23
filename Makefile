@@ -9,6 +9,8 @@ run-prod:
 	make run
 
 run:
+	pwd
+	ls
 	export FLASK_APP=server.py
 	flask run -p ${PORT}
 
