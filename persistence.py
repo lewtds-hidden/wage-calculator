@@ -51,6 +51,7 @@ def import_from_csv(db, csv_file):
             start_time, end_time = parse_time(row["Date"], row["Start"], row["End"])
             sessions.append((pid, start_time, end_time))
         
+        # sadly, Sqlite doesn't have true UPSERT
         for employee_id, employee in employees.items():
             has_employee = db.execute(
                     "SELECT 1 FROM employee WHERE employee_id = ?", 
