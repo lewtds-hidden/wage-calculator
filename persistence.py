@@ -1,14 +1,21 @@
 import csv
-import random
+import sqlite3
 from itertools import groupby, tee
 from collections import defaultdict
 from datetime import datetime, timedelta
+from random import randint, shuffle
 from faker import Faker
 
 from wage import parse_time, daily_pay
 from util import split_iter
 
 fake = Faker()
+
+class WrongFileFormat(Exception):
+    pass
+
+class InconsistentData(Exception):
+    pass
 
 
 def reset_data(db):
@@ -20,51 +27,58 @@ def reset_data(db):
 def prefill_data(db):
     reset_data(db)
 
-    employees = [(str(i), fake.name()) for i in range(1, random.randint(5, 15))]
+    employees = [(str(i), fake.name()) for i in range(1, randint(5, 15))]
     sessions = []
 
-    start_date, end_date = datetime(2014, 3, 1), datetime(2014, 5, 1)
+    start_date = datetime(randint(2010, 2017), randint(1, 12), 1)
+    end_date = start_date.replace(start_date.year + randint(1, 3))
 
     for person_id, name in employees:
-        session_start = start_date + timedelta(hours=random.randint(0, 72))
+        session_start = start_date + timedelta(hours=randint(0, 72))
         while session_start < end_date:
-            session_end = session_start + timedelta(hours=random.randint(1, 12))
+            session_end = session_start + timedelta(hours=randint(1, 12))
             sessions.append((person_id, session_start, session_end))
-            session_start = session_end + timedelta(hours=random.randint(1, 72))
+            session_start = session_end + timedelta(hours=randint(1, 72))
 
-    random.shuffle(sessions)
+    shuffle(sessions)
 
     with db:
         db.executemany("INSERT INTO employee (employee_id, name) VALUES (?, ?)", employees)
         db.executemany("INSERT INTO work_session (employee_id, start_time, end_time) VALUES (?, ?, ?)", sessions)
 
+    return start_date, end_date
 
 def import_from_csv(db, csv_file):
     reader = csv.DictReader(csv_file, delimiter=",")
     employees = defaultdict(dict)
     sessions = []
 
-    with db:
-        for row in reader:
-            pid = row["Person ID"]
-            employees[pid]["name"] = row["Person Name"]
-            start_time, end_time = parse_time(row["Date"], row["Start"], row["End"])
-            sessions.append((pid, start_time, end_time))
-        
-        # sadly, Sqlite doesn't have true UPSERT
-        for employee_id, employee in employees.items():
-            has_employee = db.execute(
-                    "SELECT 1 FROM employee WHERE employee_id = ?", 
-                    (employee_id,)).fetchone()
+    try:
+        with db:
+            for row in reader:
+                pid = row["Person ID"]
+                employees[pid]["name"] = row["Person Name"]
+                start_time, end_time = parse_time(row["Date"], row["Start"], row["End"])
+                sessions.append((pid, start_time, end_time))
+            
+            # sadly, Sqlite doesn't have true UPSERT
+            for employee_id, employee in employees.items():
+                has_employee = db.execute(
+                        "SELECT 1 FROM employee WHERE employee_id = ?", 
+                        (employee_id,)).fetchone()
 
-            if not has_employee:
-                db.execute(
-                    "INSERT INTO employee (employee_id, name) VALUES (?, ?)", 
-                    (employee_id, employee["name"]))
+                if not has_employee:
+                    db.execute(
+                        "INSERT INTO employee (employee_id, name) VALUES (?, ?)", 
+                        (employee_id, employee["name"]))
 
-        db.executemany(
-            "INSERT INTO work_session (employee_id, start_time, end_time) VALUES (?, ?, ?)",
-            sessions)
+            db.executemany(
+                "INSERT INTO work_session (employee_id, start_time, end_time) VALUES (?, ?, ?)",
+                sessions)
+    except KeyError:
+        raise WrongFileFormat()
+    except sqlite3.IntegrityError as e:
+        raise InconsistentData()
 
 
 def get_reports(db):

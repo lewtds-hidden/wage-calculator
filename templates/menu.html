@@ -1,17 +1,47 @@
 <div class="menu pure-menu">
     <div class="pure-menu-heading">Wage Calculator</div>
 
-    <form class="menu-button" action="{{url_for('import_from_csv')}}" method="POST">
-        <button class="pure-button" type="submit">Upload more data</button>
+    <form class="csv-upload menu-button" action="{{url_for('import_from_csv')}}" enctype="multipart/form-data" method="POST">
+        <input type="file" name="csv" accept=".csv" required>
+        <input type="submit" class="pure-button pure-button-primary" value="Upload CSV File">
     </form>
 
-    <form class="menu-button" action="{{url_for('reset_data')}}" method="POST">
-        <button class="pure-button" type="submit">Reset Data</button>
+    <form class="menu-button" action="{{url_for('import_from_HourList201403_csv')}}" method="POST">
+        <button class="pure-button" type="submit">HourList201403.csv</button>
     </form>
 
     <form class="menu-button" action="{{url_for('prefill_data')}}" method="POST">
         <button class="pure-button" type="submit">Fill Random Data</button>
     </form>
+
+    <form class="menu-button" action="{{url_for('reset_data')}}" method="POST">
+        <button class="reset pure-button" type="submit">Reset Data</button>
+    </form>
+
+    {% with %}
+    {% set errors = get_flashed_messages(category_filter=["menu/error"]) %}
+    {% set infos = get_flashed_messages(category_filter=["menu/info"]) %}
+
+    {% if errors %}
+    <div class="error-messages">
+        <ul>
+            {% for msg in errors %}
+            <li>{{msg}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if infos %}
+    <div class="info-messages">
+        <ul>
+            {% for msg in infos %}
+            <li>{{msg}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    {% endwith %}
 
     <div class="pure-menu-heading">Wage Reports</div>
 

@@ -1,11 +1,12 @@
 import sqlite3
-from flask import Flask, render_template, abort, url_for, g, redirect
+from io import TextIOWrapper
+from flask import Flask, render_template, abort, url_for, g, redirect, request, flash
 from datetime import timedelta
-
 
 import persistence
 
 app = Flask(__name__)
+app.secret_key = "lol"
 
 DATABASE = 'wage.db'
 
@@ -24,25 +25,51 @@ def close_connection(exception):
 
 @app.route('/')
 def list_reports():
-    return render_template("list_reports.html", reports=persistence.get_reports(get_db()))
+    return render_template("list_reports.html")
 
 
 @app.route('/data/reset', methods=["POST"])
 def reset_data():
     persistence.reset_data(get_db())
+    flash("The database was reset.", "menu/info")
     return redirect(url_for('list_reports'))
 
 @app.route('/data/prefill', methods=["POST"])
 def prefill_data():
-    persistence.prefill_data(get_db())
+    start_date, end_date = persistence.prefill_data(get_db())
+    time_format = "%d %b %Y"
+    flash("Fake data for the period from {} to {} was generated."
+            .format(start_date.strftime(time_format), end_date.strftime(time_format)),
+        "menu/info")
     return redirect(url_for('list_reports'))
-
 
 @app.route('/data/import_from_csv', methods=["POST"])
 def import_from_csv():
+    if 'csv' not in request.files:
+        flash("Cannot upload file. Please double check!", "menu/error")
+    elif request.files["csv"].filename == "":
+        flash("No file selected!", "menu/error")
+    else:
+        try:
+            file = request.files["csv"]
+            text_file = TextIOWrapper(file)
+            persistence.import_from_csv(get_db(), text_file)
+            flash("File {} uploaded successfully!".format(file.filename), "menu/info")
+        except persistence.WrongFileFormat:
+            flash("Wrong file format. Please double check!", "menu/error")
+        except persistence.InconsistentData:
+            flash("The data you try to upload is either duplicating existing data or \
+                is inconsistent. Please double check!", "menu/error")
+
+    return redirect(url_for('list_reports'))
+
+@app.route('/data/import_HourList201403_csv', methods=["POST"])
+def import_from_HourList201403_csv():
+    persistence.reset_data(get_db())
     with open("HourList201403.csv", "r") as csv_file:
         persistence.import_from_csv(get_db(), csv_file)
     
+    flash("The example data set from HourList201403.csv was loaded.", "menu/info")
     return redirect(url_for('list_reports'))
 
 def generate_punchcard_matrix(work_sessions):
@@ -84,3 +111,12 @@ def view_report(year, month):
         wage=sorted(pay.items(), key=lambda t: t[0]),
         wage_json=pay,
         punchcards=punchcard_matrices)
+
+
+@app.context_processor
+def menu_data():
+    return {
+        "menu": {
+            "reports": persistence.get_reports(get_db())
+        }
+    }
