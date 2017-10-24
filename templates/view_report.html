@@ -262,7 +262,10 @@ table.payment-summary .number {
                 // #1f8dd6 blue
                 // rgb(128, 88, 165) purple
                 var ctx = document.querySelector(".payment-breakdown-chart canvas").getContext("2d");
-                paymentBreakdownChart = new Chart(ctx, {
+                if (this.paymentBreakdownChart)
+                    this.paymentBreakdownChart.destroy();
+                    
+                this.paymentBreakdownChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
                         datasets: [{
