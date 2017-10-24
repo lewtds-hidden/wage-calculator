@@ -140,12 +140,14 @@ def view_report(year, month):
             for person_id in pay
     }
 
+    for person_id, report in pay.items():
+        report["person_id"] = person_id
+
     return render_template("view_report.html", 
         report_name=report_name(year, month),
         year=year,
         month=month,
-        wage=sorted(pay.items(), key=lambda t: t[0]),
-        wage_json=pay,
+        wage=list(pay.values()),
         punchcards=punchcard_matrices)
 
 
