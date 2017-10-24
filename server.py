@@ -147,7 +147,7 @@ def view_report(year, month):
         report_name=report_name(year, month),
         year=year,
         month=month,
-        wage=list(pay.values()),
+        wage=sorted(list(pay.values()), key=lambda report: report["person_id"]),
         punchcards=punchcard_matrices)
 
 

@@ -121,7 +121,7 @@ table.payment-summary th.sorted::after {
     </wage-table>
 
     <h2>
-        {{name}}
+        {{activeReport.name}}
     </h2>
 
     <div class="pure-g">
@@ -225,16 +225,16 @@ table.payment-summary th.sorted::after {
     var month = {{month - 1}};
     
     // parse the dates from text to object
-    for (person_id in wage) {
-        wage[person_id].sessions = wage[person_id].sessions.map(function(tuple) {
+    wage.forEach(function(report) {
+        report.sessions = report.sessions.map(function(tuple) {
             return {
                 start: new Date(tuple[0]),
                 end: new Date(tuple[1])
             };
         });
-    }
+    });
     
-    var firstId = Object.keys(wage)[0];
+    var firstId = wage[0].person_id;
     
     Vue.component('punchcard', {
         template: '#template-punchcard',
@@ -289,10 +289,11 @@ table.payment-summary th.sorted::after {
             isWorking: function(day, hour) {
                 var moment = new Date(year, month, day + 1);
                 moment.setUTCHours(hour);
+                var sessions = this.activeReport.sessions;
                 
                 // fixme: this code is pretty inefficient
-                for (var i = 0; i < this.sessions.length; i++) {
-                    var session = this.sessions[i];
+                for (var i = 0; i < sessions.length; i++) {
+                    var session = sessions[i];
                     if (moment > session.start && moment < session.end) {
                         return true;
                     }
@@ -324,9 +325,9 @@ table.payment-summary th.sorted::after {
                     data: {
                         datasets: [{
                             data: [
-                                wage[personId].base_total,
-                                wage[personId].evening_total,
-                                wage[personId].overtime_total,
+                                this.activeReport.base_total,
+                                this.activeReport.evening_total,
+                                this.activeReport.overtime_total,
                             ],
                             backgroundColor: ['#5eb95e', '#1f8dd6', 'rgb(128, 88, 165)']
                         }],
@@ -345,12 +346,10 @@ table.payment-summary th.sorted::after {
                 return punchcards[this.activeId];
             },
 
-            sessions: function() {
-                return wage[this.activeId].sessions;
-            },
-
-            name: function() {
-                return wage[this.activeId].name;
+            activeReport: function() {
+                return this.reports.find(function(report) {
+                    return report.person_id == this.activeId;
+                }.bind(this));
             }
         },
 
