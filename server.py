@@ -122,6 +122,13 @@ def generate_punchcard_matrix(work_sessions):
     return matrix
 
 
+def report_name(year, month):
+    month_name = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month - 1]
+    return "{} {}".format(year, month_name)
+
+
 @app.route("/report/<int:year>/<int:month>")
 def view_report(year, month):
     if (year, month) not in persistence.get_reports(get_db()):
@@ -134,7 +141,7 @@ def view_report(year, month):
     }
 
     return render_template("view_report.html", 
-        report_name="{}/{}".format(year, str(month).zfill(2)),
+        report_name=report_name(year, month),
         year=year,
         month=month,
         wage=sorted(pay.items(), key=lambda t: t[0]),
@@ -144,8 +151,10 @@ def view_report(year, month):
 
 @app.context_processor
 def menu_data():
+    reports = persistence.get_reports(get_db())
+
     return {
         "menu": {
-            "reports": persistence.get_reports(get_db())
+            "reports": [(year, month, report_name(year, month)) for year, month in reports]
         }
     }

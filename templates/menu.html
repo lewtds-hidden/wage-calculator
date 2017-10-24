@@ -46,9 +46,10 @@
     <div class="pure-menu-heading">Wage Reports</div>
 
     <ul class="report-list pure-menu-list">
-        {% for year, month in menu.reports %}
+        {% for year, month, report_name in menu.reports %}
         <li class="pure-menu-item">
-            <a href="{{ url_for('view_report', month=month, year=year) }}" class="pure-menu-link">{{year}}/{{month}}</a>
+            <a href="{{ url_for('view_report', month=month, year=year) }}"
+               class="pure-menu-link">{{report_name}}</a>
         </li>
         {% else %}
         <div class="menu-text">
