@@ -22,6 +22,10 @@ table.payment-summary tr {
     cursor: pointer;
 }
 
+table.payment-summary .number {
+    text-align: right;
+}
+
 .controls {
     margin-bottom: 1em;
 }
@@ -108,12 +112,12 @@ table.payment-summary tr {
     <table class="payment-summary pure-table">
         <thead>
             <tr>
-                <td>Person ID</td>
-                <td>Name</td>
-                <td>Base</td>
-                <td>Evening</td>
-                <td>Overtime</td>
-                <td>Month Total</td>
+                <th class="number">Person ID</th>
+                <th>Name</th>
+                <th class="number">Base ($)</th>
+                <th class="number">Evening ($)</th>
+                <th class="number">Overtime ($)</th>
+                <th class="number">Month Total ($)</th>
             </tr>
         </thead>
 
@@ -122,12 +126,12 @@ table.payment-summary tr {
                 v-on:click="viewDetail(personId)"
                 :class="{'pure-table-odd': personId == activeId}"
             >
-                <td>{{personId}}</td>
+                <td class="number">{{personId}}</td>
                 <td>{{report.name}}</td>
-                <td>{{report.base_total}}</td>
-                <td>{{report.evening_total}}</td>
-                <td>{{report.overtime_total}}</td>
-                <td>{{report.month_total}}</td>
+                <td class="number">{{formatMoney(report.base_total)}}</td>
+                <td class="number">{{formatMoney(report.evening_total)}}</td>
+                <td class="number">{{formatMoney(report.overtime_total)}}</td>
+                <td class="number">{{formatMoney(report.month_total)}}</td>
             </tr>
         </tbody>
     </table>
@@ -277,6 +281,10 @@ table.payment-summary tr {
                         responsive: false
                     }
                 });
+            },
+
+            formatMoney: function(amount) {
+                return amount.toFixed(2);
             }
         },
         computed: {
