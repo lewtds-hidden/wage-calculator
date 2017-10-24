@@ -215,7 +215,6 @@ table.payment-summary tr {
     
     var firstId = Object.keys(wage)[0];
     
-
     Vue.component('punchcard', {
         template: '#template-punchcard',
         props: ['matrix']
@@ -262,6 +261,12 @@ table.payment-summary tr {
             name: function() {
                 return wage[this.activeId].name;
             }
+        },
+
+        mounted: function() {
+            this.$nextTick(function() {
+                viewDetail(firstId);
+            });
         }
     });
 
@@ -269,8 +274,6 @@ table.payment-summary tr {
     var $activeSummaryRow;
     var $paymentSummary = document.querySelector("table.payment-summary");
     var paymentBreakdownChart;
-
-    viewDetail(firstId);
 
     function viewDetail(personId) {
         app.activeId = personId;
