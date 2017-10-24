@@ -336,7 +336,17 @@ table.payment-summary th.sorted::after {
                     },
                     options: {
                         animation: {animateRotate: false},
-                        responsive: false
+                        responsive: false,
+                        tooltips: {
+                            callbacks: {
+                                label: function(tooltipItem, chart) {
+                                    var label = chart.labels[tooltipItem.index];
+                                    var value = chart.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+
+                                    return label + ": $" + formatMoney(value);
+                                }
+                            }
+                        }
                     }
                 });
             },
