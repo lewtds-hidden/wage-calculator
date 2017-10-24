@@ -101,36 +101,37 @@ table.payment-summary tr {
 <main>
 <h1>Monthly Wage {{report_name}}</h1>
 
-<table class="payment-summary pure-table">
-    <thead>
-        <tr>
-            <td>Person ID</td>
-            <td>Name</td>
-            <td>Base</td>
-            <td>Evening</td>
-            <td>Overtime</td>
-            <td>Month Total</td>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for person_id, report in wage %}
-        <tr data-person-id="{{person_id}}" onclick="viewDetail('{{person_id}}')">
-            <td>{{person_id}}</td>
-            <td>{{report.name}}</td>
-            <td>{{report.base_total}}</td>
-            <td>{{report.evening_total}}</td>
-            <td>{{report.overtime_total}}</td>
-            <td>{{report.month_total}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
 <hr>
 
 {% raw %}
 <div id="app" v-cloak>
+    <table class="payment-summary pure-table">
+        <thead>
+            <tr>
+                <td>Person ID</td>
+                <td>Name</td>
+                <td>Base</td>
+                <td>Evening</td>
+                <td>Overtime</td>
+                <td>Month Total</td>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr v-for="(report, personId) in reports" 
+                v-on:click="viewDetail(personId)"
+                :class="{'pure-table-odd': personId == activeId}"
+            >
+                <td>{{personId}}</td>
+                <td>{{report.name}}</td>
+                <td>{{report.base_total}}</td>
+                <td>{{report.evening_total}}</td>
+                <td>{{report.overtime_total}}</td>
+                <td>{{report.month_total}}</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h2>
         {{name}}
     </h2>
@@ -224,6 +225,7 @@ table.payment-summary tr {
         el: '#app',
         data: {
             activeId: firstId,
+            reports: wage,
         },
         methods: {
             isWorking: function(day, hour) {
@@ -247,6 +249,34 @@ table.payment-summary tr {
 
             dayOfWeek: function(day) {
                 return new Date(year, month, day).getDay();
+            },
+
+            viewDetail: function(personId) {
+                this.activeId = personId;
+
+                // #5eb95e green 
+                // #1f8dd6 blue
+                // rgb(128, 88, 165) purple
+                var ctx = document.querySelector(".payment-breakdown-chart canvas").getContext("2d");
+                paymentBreakdownChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [
+                                wage[personId].base_total,
+                                wage[personId].evening_total,
+                                wage[personId].overtime_total,
+                            ],
+                            backgroundColor: ['#5eb95e', '#1f8dd6', 'rgb(128, 88, 165)']
+                        }],
+
+                        labels: ["Base", "Evening", "Overtime"]
+                    },
+                    options: {
+                        animation: {animateRotate: false},
+                        responsive: false
+                    }
+                });
             }
         },
         computed: {
@@ -265,51 +295,9 @@ table.payment-summary tr {
 
         mounted: function() {
             this.$nextTick(function() {
-                viewDetail(firstId);
+                this.viewDetail(firstId);
             });
         }
     });
-
-
-    var $activeSummaryRow;
-    var $paymentSummary = document.querySelector("table.payment-summary");
-    var paymentBreakdownChart;
-
-    function viewDetail(personId) {
-        app.activeId = personId;
-
-        if ($activeSummaryRow)
-            $activeSummaryRow.className = "";
-
-        $activeSummaryRow = $paymentSummary.querySelector("tr[data-person-id='" + personId + "']");
-        $activeSummaryRow.className = "pure-table-odd";
-
-        if (paymentBreakdownChart)
-            paymentBreakdownChart.destroy();
-
-        // #5eb95e green 
-        // #1f8dd6 blue
-        // rgb(128, 88, 165) purple
-        var ctx = document.querySelector(".payment-breakdown-chart canvas").getContext("2d");
-        paymentBreakdownChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [
-                        wage[personId].base_total,
-                        wage[personId].evening_total,
-                        wage[personId].overtime_total,
-                    ],
-                    backgroundColor: ['#5eb95e', '#1f8dd6', 'rgb(128, 88, 165)']
-                }],
-
-                labels: ["Base", "Evening", "Overtime"]
-            },
-            options: {
-                animation: {animateRotate: false},
-                responsive: false
-            }
-        });
-    }
 </script>
 {% endblock %}
